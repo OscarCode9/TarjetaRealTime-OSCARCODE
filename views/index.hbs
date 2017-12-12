@@ -1,0 +1,77 @@
+<div class="container">
+  <div class="row">
+    <div class="col s16 m12 l6 ">
+      <div class="card small">
+        <div class="card-image">
+          <i id="id_noticia">{{tarjeta.ID}}</i>
+
+          <img src="{{tarjeta.urlImg}}">
+          <span class="card-title">{{tarjeta.nombreUsuario}}</span>
+        </div>
+        <div class="card-action">
+          <i id="{{tarjeta.ID}}" class="fa fa-heart fa-2x corazon" aria-hidden="true">&nbsp; {{tarjeta.meGusta}}</i>
+          <i class="fa fa-comment fa-2x" aria-hidden="true">&nbsp; {{tarjeta.comentarios}}</i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+  $(document).ready(function (){
+    $('#id_noticia').hide();
+
+    var socket = io.connect('http://localhost:3000');
+    var numLikesHelp = Number({{{likeTotal likes}}});
+    var estadoLike = true;
+    $('.corazon').click(function (){
+      var elem = $(this);
+      var id = elem.parent().parent().find('#id_noticia').text();
+      var numLike;
+      if (estadoLike) {
+      numLikesHelp++;
+      estadoLike = false;
+      numLike = " " + numLikesHelp.toString();
+      $(this).text(numLike)
+      $(this).css("color", "#d50000")
+
+      SocketLikes(numLikesHelp,id)
+      
+      }else{
+      numLikesHelp--;
+      estadoLike = true;
+      numLike = " " + numLikesHelp.toString();
+      $(this).text(numLike)
+      $(this).css("color", "black")
+
+      SocketLikes(numLikesHelp,id)
+
+      }
+      
+      
+      
+    })
+
+    function SocketLikes(numLikesHelp, id){
+      let newLike = {
+        likes: numLikesHelp,
+        ID: id
+      }
+      socket.emit('new-like', newLike);
+    }
+    socket.on('newLike', function (data) {
+      console.log(data);
+      var likes = data.likes
+      var numLike = " " + likes.toString();
+      numLikesHelp = data.likes
+      $(`#${data.ID}`).text(numLike)
+    });
+    
+    
+    
+  })
+
+  
+</script>
